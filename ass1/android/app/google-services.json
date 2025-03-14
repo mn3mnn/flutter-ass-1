@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "760592855156",
+    "project_id": "fcai-ass1",
+    "storage_bucket": "fcai-ass1.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:760592855156:android:c6731a571e8da199176121",
+        "android_client_info": {
+          "package_name": "com.example.ass1"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDuylqbH-asFR-6U4UdXe1e4b7Jf9hQHj0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
