@@ -1,12 +1,9 @@
-import 'dart:ui';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'pages/login_page.dart';
-import 'pages/signup_page.dart'; // Import the SignUpPage class
+import 'lib/pages/login_page.dart';
+import 'lib/pages/signup_page.dart';
+import 'lib/pages/profile_page.dart';
 import 'firebase_options.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-import 'package:sqflite_common/sqlite_api.dart';
-import 'dart:typed_data';
 
 
 void main() async {
@@ -32,6 +29,7 @@ class MyApp extends StatelessWidget {
       routes: {
         '/login': (context) => LoginPage(),
         '/signup': (context) => SignupPage(), 
+        '/profile': (context) => ProfilePage(userData: ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>),
       },
     );
   }

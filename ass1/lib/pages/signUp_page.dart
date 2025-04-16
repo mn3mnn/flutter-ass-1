@@ -11,6 +11,8 @@ class SignupPage extends StatefulWidget {
 }
 
 class _SignupPageState extends State<SignupPage> {
+  DatabaseHelper db = DatabaseHelper();
+
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
@@ -135,8 +137,14 @@ class _SignupPageState extends State<SignupPage> {
 
                 const SizedBox(height: 25),
 
-                // sign in button
-                MyButton(onTap: () => signUserUp(context), text: "Sign Up"),
+                MyButton(
+                  onTap: () async {
+                    signUserUp(context);
+                    int response = await db.insertData("INSERT INTO users (name, email, studentId, password) VALUES ('${nameController.text}', '${emailController.text}', '${studentIdController.text}', '${passwordController.text}')");
+                    print(response);
+                  },
+                  text: "Sign Up",
+                ),
 
                 const SizedBox(height: 50),
 
@@ -170,6 +178,7 @@ class _SignupPageState extends State<SignupPage> {
       ),
     );
   }
+
   // text editing controllers
   final nameController = TextEditingController();
   final emailController = TextEditingController();
@@ -255,48 +264,5 @@ class _SignupPageState extends State<SignupPage> {
         ),
       );
     }
-
-  DatabaseHelper dbHelper = DatabaseHelper();
-
-  void testFetchUsers() async {
-    DatabaseHelper dbHelper = DatabaseHelper();
-    List<Map<String, dynamic>> users = await dbHelper.getAllUsers();
-
-    print("Users in DB: $users"); // ✅ Debugging Log
-  }
-
-  Map<String, dynamic>? existingUser = await dbHelper.getUserByEmail(email);
-  if (existingUser != null) {
-    showMessage(context, "User already exists with this email.");
-    return;
-  }
-
-  int userId = await dbHelper.insertUser({
-    'name': name,
-    'email': email,
-    'studentId': studentId,
-    'password': password, // In production, hash the password
-  });
-
-  if (userId > 0) {
-    showMessage(context, "Signup Successful!");
-    testFetchUsers();
-  } else {
-    showMessage(context, "Signup Failed!");
   }
 }
-
-
-
-  }
-
-  void showMessage(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: message == "Signup Successful!" ? Colors.green : Colors.red,
-      ),
-    );
-  }
-
-  

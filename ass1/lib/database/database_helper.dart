@@ -1,68 +1,69 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:flutter/widgets.dart';
 
 class DatabaseHelper {
-  static final DatabaseHelper _instance = DatabaseHelper._internal();
-  factory DatabaseHelper() => _instance;
-  static Database? _database;
 
-  DatabaseHelper._internal();
+  static Database? _db;
 
-  Future<Database> get database async {
-    if (_database != null) return _database!;
-    _database = await _initDatabase();
-    return _database!;
-  }
-
-    Future<Database> _initDatabase() async {
-    WidgetsFlutterBinding.ensureInitialized(); // Ensure Flutter is ready
-
-    try {
-      String path = join(await getDatabasesPath(), 'users.db');
-      return await openDatabase(
-        path,
-        version: 1,
-        onCreate: (db, version) async {
-          await db.execute(
-            '''CREATE TABLE users (
-              id INTEGER PRIMARY KEY AUTOINCREMENT, 
-              name TEXT NOT NULL, 
-              email TEXT UNIQUE NOT NULL, 
-              studentId TEXT UNIQUE NOT NULL, 
-              password TEXT NOT NULL
-            )''',
-          );
-        },
-      );
-    } catch (e) {
-      debugPrint("Database initialization failed: $e");
-      rethrow;
+  Future<Database?> get db async {
+    if (_db == null) {
+      _db = await initialDB(); 
+      return _db;
+    }else{
+      return _db;
     }
+    
+  }
+ 
+  initialDB() async{
+    String databasesPath = await getDatabasesPath();
+    String Path = join(databasesPath, 'users.db');
+
+    Database mydb = await openDatabase(Path, onCreate: _onCreate, version: 1, onUpgrade: _onUpgrade);
+
+    return mydb;
+
   }
 
-  Future<int> insertUser(Map<String, dynamic> user) async {
-    final db = await database;
-    int result = await db.insert('users', user);
-  
-    print("User Inserted: $user"); 
-
-    return result;
+  _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    print("Upgrading the database from $oldVersion to $newVersion");
   }
 
-  Future<List<Map<String, dynamic>>> getAllUsers() async {
-    final db = await database;
-    return await db.query('users');
+  _onCreate(Database db, int version) async {
+    await db.execute('''CREATE TABLE "users" 
+    ("id" INTEGER PRIMARY KEY,
+    "name" TEXT,
+    "email" TEXT,
+    "studentId" TEXT,
+    "password" TEXT)''');
+
+    print("Table is created");
+
   }
 
-  Future<Map<String, dynamic>?> getUserByEmail(String email) async {
-    final db = await database;
-    List<Map<String, dynamic>> result = await db.query(
-      'users',
-      where: 'email = ?',
-      whereArgs: [email],
-    );
-    return result.isNotEmpty ? result.first : null;
+
+  readData(String sql) async {
+    Database? mydb = await db;
+    Future<List<Map<String, Object?>>> response = mydb!.rawQuery(sql);
+    return response;
   }
+
+  insertData(String sql) async {
+    Database? mydb = await db;
+    var response = mydb!.rawInsert(sql);
+    return response;
+  }
+
+  updateData(String sql) async {
+    Database? mydb = await db;
+    var response = mydb!.rawUpdate(sql);
+    return response;
+  }
+
+  deleteData(String sql) async {
+    Database? mydb = await db;
+    var response = mydb!.rawDelete(sql);
+    return response;
+  }
+
 }
