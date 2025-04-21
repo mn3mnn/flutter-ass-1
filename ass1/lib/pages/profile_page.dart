@@ -207,10 +207,33 @@ class _ProfilePageState extends State<ProfilePage> {
               const SizedBox(height: 20),
 
               MyButton(onTap: updateUserProfile, text: "Update Profile"),
+
+              const SizedBox(height: 20),
+
             ],
           ),
         ),
       ),
-    );
-  }
+      bottomNavigationBar: BottomNavigationBar(
+      currentIndex: 0, // Set the current index to 0 for Profile
+      onTap: (index) {
+        if (index == 0) {
+          // Stay on Profile
+        } else if (index == 1) {
+          Navigator.pushReplacementNamed(context, '/store-list');
+        } else if (index == 2) {
+          Navigator.pushReplacementNamed(context, '/favorite-stores');
+        }
+      },
+      selectedItemColor: Colors.teal,
+      items: const [
+        BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+        BottomNavigationBarItem(icon: Icon(Icons.store), label: 'Stores'),
+        BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Favorites'),
+      ],
+    ),
+  );
 }
+  
+}
+

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:ass1/components/button.dart';
 import 'package:ass1/components/textfield.dart';
 import '../database/database_helper.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -36,12 +37,16 @@ class _LoginPageState extends State<LoginPage> {
       return;
     }
 
-    showMessage(context, "Login Successful!", isSuccess: true);
+    else{
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('loggedInEmail', email); // Save email
+      showMessage(context, "Login Successful!", isSuccess: true);
+      Future.delayed(const Duration(seconds: 1), () {
+      Navigator.pushReplacementNamed(context, '/store-list', arguments: user);
+      });
+    }
 
-    // Navigate to Profile Page
-    Future.delayed(const Duration(seconds: 1), () {
-      Navigator.pushReplacementNamed(context, '/profile', arguments: user);
-    });
+    
   }
 
   void showMessage(

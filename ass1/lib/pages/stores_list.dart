@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:ass1/database/database_helper.dart';
+import 'package:ass1/pages/profile_page.dart';
 
 class Store {
   final int id;
@@ -10,7 +12,7 @@ class Store {
 }
 
 class StoreListPage extends StatefulWidget {
-  const StoreListPage({Key? key}) : super(key: key);
+  const StoreListPage({super.key});
 
   @override
   State<StoreListPage> createState() => _StoreListPageState();
@@ -23,6 +25,10 @@ class _StoreListPageState extends State<StoreListPage> {
     Store(id: 3, name: "Blbn ", address: "345 October St."),
     Store(id: 4, name: "H&M", address: "22 Haram St."),
   ];
+
+  
+
+
 
   Set<int> favoriteStoreIds = {};
 
@@ -59,15 +65,78 @@ class _StoreListPageState extends State<StoreListPage> {
     );
   }
 
-  void onTabTapped(int index) {
+  void onTabTapped(int index) async {
     setState(() {
       _currentIndex = index;
     });
 
+    // DatabaseHelper dbHelper = DatabaseHelper();
+    // final prefs = await SharedPreferences.getInstance();
+    // final email = prefs.getString('loggedInEmail'); // Retrieve logged-in email
+    // if (email != null) {
+    //   final userData = await dbHelper.getUserByEmail(email);
+    //   if (userData != null) {
+    //     Navigator.pushReplacementNamed(
+    //       context,
+    //       '/profile',
+    //       arguments: userData,
+    //     );
+    //   } else {
+    //     ScaffoldMessenger.of(context).showSnackBar(
+    //       const SnackBar(content: Text('User data not found')),
+    //     );
+    //   }
+    // } else {
+    //   ScaffoldMessenger.of(context).showSnackBar(
+    //     const SnackBar(content: Text('No user is logged in')),
+    //   );
+    // }
+
+    // final userData = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+    //   if (userData != null) {
+    //     Navigator.pushReplacementNamed(
+    //       context,
+    //       '/profile',
+    //       arguments: userData,
+    //     );
+    //   } else {
+    //     ScaffoldMessenger.of(context).showSnackBar(
+    //       const SnackBar(content: Text('User data not found')),
+    //     );
+    //   }
+
+
+
     if (index == 0) {
       // Profile tab
-      Navigator.pushNamed(context, '/profile');
-    } else if (index == 2) {
+      DatabaseHelper dbHelper = DatabaseHelper();
+    final prefs = await SharedPreferences.getInstance();
+    final email = prefs.getString('loggedInEmail'); // Retrieve logged-in email
+    if (email != null) {
+      final userData = await dbHelper.getUserByEmail(email);
+      if (userData != null) {
+        Navigator.pushReplacementNamed(
+          context,
+          '/profile',
+          arguments: userData,
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('User data not found')),
+        );
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No user is logged in')),
+      );
+    }
+      
+    
+    } else if (index == 1) {
+      // Stores tab
+      Navigator.pushReplacementNamed(context, '/store-list');
+    }
+    else if (index == 2) {
       // Favorites tab
       Navigator.pushNamed(context, '/favorite-stores');
     }

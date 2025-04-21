@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:ass1/database/database_helper.dart';
+import 'package:ass1/pages/profile_page.dart';
 
 class Store {
   final int id;
@@ -10,7 +12,7 @@ class Store {
 }
 
 class FavoriteStoresPage extends StatefulWidget {
-  const FavoriteStoresPage({Key? key}) : super(key: key);
+  const FavoriteStoresPage({super.key});
 
   @override
   State<FavoriteStoresPage> createState() => _FavoriteStoresPageState();
@@ -59,15 +61,38 @@ class _FavoriteStoresPageState extends State<FavoriteStoresPage> {
     );
   }
 
-  void onTabTapped(int index) {
+  void onTabTapped(int index) async{
     setState(() {
       _currentIndex = index;
     });
 
     if (index == 0) {
-      Navigator.pushNamed(context, '/profile');
+      DatabaseHelper dbHelper = DatabaseHelper();
+      final prefs = await SharedPreferences.getInstance();
+      final email = prefs.getString('loggedInEmail'); // Retrieve logged-in email
+      if (email != null) {
+        final userData = await dbHelper.getUserByEmail(email);
+        if (userData != null) {
+          Navigator.pushReplacementNamed(
+            context,
+            '/profile',
+            arguments: userData,
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('User data not found')),
+          );
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No user is logged in')),
+        );
+      }
     } else if (index == 1) {
       Navigator.pushNamed(context, '/store-list');
+    }
+    else if (index == 2) {
+      Navigator.pushNamed(context, '/favorite-stores');  // This is the current page, so no need to navigate
     }
   }
 
