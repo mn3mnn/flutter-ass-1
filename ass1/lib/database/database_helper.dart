@@ -1,69 +1,108 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import 'package:flutter/widgets.dart';
 
 class DatabaseHelper {
+  static final DatabaseHelper _instance = DatabaseHelper._internal();
+  factory DatabaseHelper() => _instance;
+  static Database? _database;
 
-  static Database? _db;
+  DatabaseHelper._internal();
 
-  Future<Database?> get db async {
-    if (_db == null) {
-      _db = await initialDB(); 
-      return _db;
-    }else{
-      return _db;
+  Future<Database> get database async {
+    if (_database != null) return _database!;
+    _database = await _initDatabase();
+    return _database!;
+  }
+
+  Future<Database> _initDatabase() async {
+    try {
+      String path = join(await getDatabasesPath(), 'users.db');
+      return await openDatabase(
+        path,
+        version: 1,
+        onCreate: (db, version) async {
+          await db.execute('''CREATE TABLE users (
+              id INTEGER PRIMARY KEY AUTOINCREMENT, 
+              name TEXT NOT NULL, 
+              email TEXT UNIQUE NOT NULL, 
+              studentId TEXT UNIQUE NOT NULL, 
+              password TEXT NOT NULL
+              gender TEXT 
+              level TEXT
+              image TEXT
+            )''');
+        },
+      );
+    } catch (e) {
+      debugPrint("Database initialization failed: $e");
+      rethrow;
     }
-    
-  }
- 
-  initialDB() async{
-    String databasesPath = await getDatabasesPath();
-    String Path = join(databasesPath, 'users.db');
-
-    Database mydb = await openDatabase(Path, onCreate: _onCreate, version: 1, onUpgrade: _onUpgrade);
-
-    return mydb;
-
   }
 
-  _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    print("Upgrading the database from $oldVersion to $newVersion");
+  Future<int> insertUser(Map<String, dynamic> user) async {
+    final db = await database;
+    try {
+      int result = await db.insert(
+        'users',
+        user,
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+      debugPrint("User Inserted: $user");
+      return result;
+    } catch (e) {
+      debugPrint("Insert failed: $e");
+      return -1;
+    }
   }
 
-  _onCreate(Database db, int version) async {
-    await db.execute('''CREATE TABLE "users" 
-    ("id" INTEGER PRIMARY KEY,
-    "name" TEXT,
-    "email" TEXT,
-    "studentId" TEXT,
-    "password" TEXT)''');
-
-    print("Table is created");
-
+  Future<List<Map<String, dynamic>>> getAllUsers() async {
+    final db = await database;
+    try {
+      return await db.query('users');
+    } catch (e) {
+      debugPrint("Get all users failed: $e");
+      return [];
+    }
   }
 
-
-  readData(String sql) async {
-    Database? mydb = await db;
-    Future<List<Map<String, Object?>>> response = mydb!.rawQuery(sql);
-    return response;
+  Future<Map<String, dynamic>?> getUserByEmail(String email) async {
+    final db = await database;
+    try {
+      List<Map<String, dynamic>> result = await db.query(
+        'users',
+        where: 'email = ?',
+        whereArgs: [email],
+      );
+      return result.isNotEmpty ? result.first : null;
+    } catch (e) {
+      debugPrint("Get user by email failed: $e");
+      return null;
+    }
   }
 
-  insertData(String sql) async {
-    Database? mydb = await db;
-    var response = mydb!.rawInsert(sql);
-    return response;
+  Future<int> deleteUser(int id) async {
+    final db = await database;
+    try {
+      return await db.delete('users', where: 'id = ?', whereArgs: [id]);
+    } catch (e) {
+      debugPrint("Delete user failed: $e");
+      return -1;
+    }
   }
 
-  updateData(String sql) async {
-    Database? mydb = await db;
-    var response = mydb!.rawUpdate(sql);
-    return response;
+  Future<int> updateUser(int id, Map<String, dynamic> updatedData) async {
+    final db = await database;
+    try {
+      return await db.update(
+        'users',
+        updatedData,
+        where: 'id = ?',
+        whereArgs: [id],
+      );
+    } catch (e) {
+      debugPrint("Update user failed: $e");
+      return -1;
+    }
   }
-
-  deleteData(String sql) async {
-    Database? mydb = await db;
-    var response = mydb!.rawDelete(sql);
-    return response;
-  }
-
 }
