@@ -40,11 +40,12 @@ class _ProfilePageState extends State<ProfilePage> {
         widget.userData['image'] != null
             ? File(widget.userData['image'])
             : null;
-      
   }
 
   Future<void> pickImage() async {
-    final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
+    final pickedFile = await ImagePicker().pickImage(
+      source: ImageSource.gallery,
+    );
     if (pickedFile != null) {
       setState(() {
         image = File(pickedFile.path);
@@ -118,17 +119,23 @@ class _ProfilePageState extends State<ProfilePage> {
         child: SingleChildScrollView(
           child: Column(
             children: [
-
               GestureDetector(
                 onTap: pickImage,
                 child: CircleAvatar(
                   radius: 50,
-                  backgroundImage: image != null
-                      ? FileImage(image!)
-                      : const AssetImage('assets/default_profile.png') as ImageProvider,
-                  child: image == null
-                      ? const Icon(Icons.camera_alt, size: 50, color: Colors.grey)
-                      : null,
+                  backgroundImage:
+                      image != null
+                          ? FileImage(image!)
+                          : const AssetImage('assets/default_profile.png')
+                              as ImageProvider,
+                  child:
+                      image == null
+                          ? const Icon(
+                            Icons.camera_alt,
+                            size: 50,
+                            color: Colors.grey,
+                          )
+                          : null,
                 ),
               ),
 
@@ -209,31 +216,31 @@ class _ProfilePageState extends State<ProfilePage> {
               MyButton(onTap: updateUserProfile, text: "Update Profile"),
 
               const SizedBox(height: 20),
-
             ],
           ),
         ),
       ),
       bottomNavigationBar: BottomNavigationBar(
-      currentIndex: 0, // Set the current index to 0 for Profile
-      onTap: (index) {
-        if (index == 0) {
-          // Stay on Profile
-        } else if (index == 1) {
-          Navigator.pushReplacementNamed(context, '/store-list');
-        } else if (index == 2) {
-          Navigator.pushReplacementNamed(context, '/favorite-stores');
-        }
-      },
-      selectedItemColor: Colors.teal,
-      items: const [
-        BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
-        BottomNavigationBarItem(icon: Icon(Icons.store), label: 'Stores'),
-        BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Favorites'),
-      ],
-    ),
-  );
+        currentIndex: 0, // Set the current index to 0 for Profile
+        onTap: (index) {
+          if (index == 0) {
+            // Stay on Profile
+          } else if (index == 1) {
+            Navigator.pushReplacementNamed(context, '/store-list');
+          } else if (index == 2) {
+            Navigator.pushReplacementNamed(context, '/favorite-stores');
+          }
+        },
+        selectedItemColor: Colors.teal,
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+          BottomNavigationBarItem(icon: Icon(Icons.store), label: 'Stores'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.favorite),
+            label: 'Favorites',
+          ),
+        ],
+      ),
+    );
+  }
 }
-  
-}
-

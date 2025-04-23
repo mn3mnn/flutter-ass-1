@@ -4,11 +4,16 @@ import 'package:flutter/material.dart';
 import 'pages/login_page.dart';
 import 'pages/signup_page.dart'; // Import the SignUpPage class
 import 'pages/profile_page.dart';
+import 'package:provider/provider.dart';
+import 'providers/store_provider.dart';
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-
-  runApp(const MyApp());
+void main() {
+  runApp(
+    MultiProvider(
+      providers: [ChangeNotifierProvider(create: (_) => StoreProvider())],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -21,19 +26,18 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: LoginPage(),
       initialRoute: '/login',
       routes: {
-        '/login': (context) => LoginPage(),
-        '/signup': (context) => SignupPage(),
+        '/login': (context) => const LoginPage(),
+        '/signup': (context) => const SignupPage(),
         '/profile': (context) {
           final args =
               ModalRoute.of(context)!.settings.arguments
                   as Map<String, dynamic>;
           return ProfilePage(userData: args);
         },
-        '/store-list': (context) => StoreListPage(),
-        '/favorite-stores': (context) => FavoriteStoresPage(),
+        '/store-list': (context) => const StoreListPage(),
+        '/favorite-stores': (context) => const FavoriteStoresPage(),
       },
     );
   }

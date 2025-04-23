@@ -8,6 +8,14 @@ class Store {
   final String address;
 
   Store({required this.id, required this.name, required this.address});
+
+  factory Store.fromJson(Map<String, dynamic> json) {
+    return Store(id: json['id'], name: json['name'], address: json['address']);
+  }
+
+  Map<String, dynamic> toJson() {
+    return {'id': id, 'name': name, 'address': address};
+  }
 }
 
 class FavoriteStoresPage extends StatefulWidget {
@@ -21,12 +29,11 @@ class _FavoriteStoresPageState extends State<FavoriteStoresPage> {
   List<Store> allStores = [
     Store(id: 1, name: "Town Team", address: "12 Haram St."),
     Store(id: 2, name: "Wahmy", address: "88 Doki St"),
-    Store(id: 3, name: "Blbn ", address: "345 October St."),
+    Store(id: 3, name: "Blbn", address: "345 October St."),
     Store(id: 4, name: "H&M", address: "22 Haram St."),
   ];
 
   Set<int> favoriteStoreIds = {};
-
   int _currentIndex = 2;
 
   @override
@@ -60,7 +67,7 @@ class _FavoriteStoresPageState extends State<FavoriteStoresPage> {
     );
   }
 
-  void onTabTapped(int index) async{
+  void onTabTapped(int index) async {
     setState(() {
       _currentIndex = index;
     });
@@ -68,7 +75,7 @@ class _FavoriteStoresPageState extends State<FavoriteStoresPage> {
     if (index == 0) {
       DatabaseHelper dbHelper = DatabaseHelper();
       final prefs = await SharedPreferences.getInstance();
-      final email = prefs.getString('loggedInEmail'); // Retrieve logged-in email
+      final email = prefs.getString('loggedInEmail');
       if (email != null) {
         final userData = await dbHelper.getUserByEmail(email);
         if (userData != null) {
@@ -78,20 +85,19 @@ class _FavoriteStoresPageState extends State<FavoriteStoresPage> {
             arguments: userData,
           );
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('User data not found')),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('User data not found')));
         }
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('No user is logged in')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('No user is logged in')));
       }
     } else if (index == 1) {
       Navigator.pushNamed(context, '/store-list');
-    }
-    else if (index == 2) {
-      Navigator.pushNamed(context, '/favorite-stores');  // This is the current page, so no need to navigate
+    } else if (index == 2) {
+      Navigator.pushNamed(context, '/favorite-stores');
     }
   }
 

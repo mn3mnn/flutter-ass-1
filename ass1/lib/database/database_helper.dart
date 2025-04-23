@@ -27,9 +27,9 @@ class DatabaseHelper {
               name TEXT NOT NULL, 
               email TEXT UNIQUE NOT NULL, 
               studentId TEXT UNIQUE NOT NULL, 
-              password TEXT NOT NULL
-              gender TEXT 
-              level TEXT
+              password TEXT NOT NULL,
+              gender TEXT, 
+              level INT,
               image TEXT
             )''');
         },
@@ -74,6 +74,7 @@ class DatabaseHelper {
         where: 'email = ?',
         whereArgs: [email],
       );
+      debugPrint("Get user by email returned: $result");
       return result.isNotEmpty ? result.first : null;
     } catch (e) {
       debugPrint("Get user by email failed: $e");

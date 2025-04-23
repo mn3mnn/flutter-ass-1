@@ -183,8 +183,8 @@ class _SignupPageState extends State<SignupPage> {
         'email': email,
         'studentId': studentId,
         'password': password,
-        'gender' : gender,
-        'level' : selectedLevel,
+        'gender': gender,
+        'level': selectedLevel,
       });
       if (userId > 0) {
         showMessage(context, 'Signup Successful!', Colors.green);

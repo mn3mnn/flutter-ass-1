@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:ass1/database/database_helper.dart';
+import 'package:provider/provider.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../database/database_helper.dart';
+import '../providers/store_provider.dart';
+import '../permissions_helper.dart';
 
 class Store {
   final int id;
@@ -27,18 +30,36 @@ class StoreListPage extends StatefulWidget {
 }
 
 class _StoreListPageState extends State<StoreListPage> {
-  List<Store> allStores = [
-    Store(id: 1, name: "Town Team", address: "12 Haram St.", latitude: 29.9765, longitude: 31.1313),
-    Store(id: 2, name: "Wahmy", address: "88 Doki St", latitude: 30.0444, longitude: 31.2357),
-    Store(id: 3, name: "Blbn", address: "345 October St.", latitude: 29.9825, longitude: 31.2001),
-    Store(id: 4, name: "H&M", address: "22 Haram St.", latitude: 29.9765, longitude: 31.1313),
+  final List<Store> allStores = [
+    Store(
+      id: 1,
+      name: "Town Team",
+      address: "12 Haram St.",
+      latitude: 29.9765,
+      longitude: 31.1313,
+    ),
+    Store(
+      id: 2,
+      name: "Wahmy",
+      address: "88 Doki St",
+      latitude: 30.0444,
+      longitude: 31.2357,
+    ),
+    Store(
+      id: 3,
+      name: "Blbn",
+      address: "345 October St.",
+      latitude: 29.9825,
+      longitude: 31.2001,
+    ),
+    Store(
+      id: 4,
+      name: "H&M",
+      address: "22 Haram St.",
+      latitude: 29.9765,
+      longitude: 31.1313,
+    ),
   ];
-
-  
-
-
-
-  Set<int> favoriteStoreIds = {};
 
   int _currentIndex = 1;
   Position? userPosition;
@@ -46,144 +67,86 @@ class _StoreListPageState extends State<StoreListPage> {
   @override
   void initState() {
     super.initState();
-    loadFavorites();
-    getUserLocation();
+    _loadFavorites();
+    determinePosition()
+        .then((position) {
+          setState(() {
+            userPosition = position;
+          });
+        })
+        .catchError((e) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(e.toString())));
+        });
   }
 
-  Future<void> loadFavorites() async {
+  Future<void> _loadFavorites() async {
     final prefs = await SharedPreferences.getInstance();
     final List<String>? savedIds = prefs.getStringList('favorite_stores');
     if (savedIds != null) {
-      setState(() {
-        favoriteStoreIds = savedIds.map((id) => int.parse(id)).toSet();
-      });
+      final favoriteIds = savedIds.map((id) => int.parse(id)).toSet();
+      Provider.of<StoreProvider>(
+        context,
+        listen: false,
+      ).setFavorites(favoriteIds);
     }
   }
 
-  Future<void> getUserLocation() async {
-    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Location services are disabled.')),
-      );
-      return;
-    }
-
-    LocationPermission permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Location permissions are denied.')),
-        );
-        return;
-      }
-    }
-
-    if (permission == LocationPermission.deniedForever) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Location permissions are permanently denied.')),
-      );
-      return;
-    }
-
-    final position = await Geolocator.getCurrentPosition();
-    setState(() {
-      userPosition = position;
-    });
+  double _calculateDistance(
+    double lat1,
+    double lon1,
+    double lat2,
+    double lon2,
+  ) {
+    return Geolocator.distanceBetween(lat1, lon1, lat2, lon2) /
+        1000; // Distance in kilometers
   }
 
-  double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
-    return Geolocator.distanceBetween(lat1, lon1, lat2, lon2) / 1000; // Distance in kilometers
-  }
-
-  Future<void> toggleFavorite(int storeId) async {
+  Future<void> _toggleFavorite(int storeId) async {
+    final storeProvider = Provider.of<StoreProvider>(context, listen: false);
+    storeProvider.toggleFavorite(storeId);
     final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      if (favoriteStoreIds.contains(storeId)) {
-        favoriteStoreIds.remove(storeId);
-      } else {
-        favoriteStoreIds.add(storeId);
-      }
-    });
     await prefs.setStringList(
       'favorite_stores',
-      favoriteStoreIds.map((id) => id.toString()).toList(),
+      storeProvider.favoriteStoreIds.map((id) => id.toString()).toList(),
     );
   }
 
-  void onTabTapped(int index) async {
+  void _onTabTapped(int index) async {
     setState(() {
       _currentIndex = index;
     });
 
-    // DatabaseHelper dbHelper = DatabaseHelper();
-    // final prefs = await SharedPreferences.getInstance();
-    // final email = prefs.getString('loggedInEmail'); // Retrieve logged-in email
-    // if (email != null) {
-    //   final userData = await dbHelper.getUserByEmail(email);
-    //   if (userData != null) {
-    //     Navigator.pushReplacementNamed(
-    //       context,
-    //       '/profile',
-    //       arguments: userData,
-    //     );
-    //   } else {
-    //     ScaffoldMessenger.of(context).showSnackBar(
-    //       const SnackBar(content: Text('User data not found')),
-    //     );
-    //   }
-    // } else {
-    //   ScaffoldMessenger.of(context).showSnackBar(
-    //     const SnackBar(content: Text('No user is logged in')),
-    //   );
-    // }
-
-    // final userData = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
-    //   if (userData != null) {
-    //     Navigator.pushReplacementNamed(
-    //       context,
-    //       '/profile',
-    //       arguments: userData,
-    //     );
-    //   } else {
-    //     ScaffoldMessenger.of(context).showSnackBar(
-    //       const SnackBar(content: Text('User data not found')),
-    //     );
-    //   }
-
-
-
     if (index == 0) {
       // Profile tab
       DatabaseHelper dbHelper = DatabaseHelper();
-    final prefs = await SharedPreferences.getInstance();
-    final email = prefs.getString('loggedInEmail'); // Retrieve logged-in email
-    if (email != null) {
-      final userData = await dbHelper.getUserByEmail(email);
-      if (userData != null) {
-        Navigator.pushReplacementNamed(
-          context,
-          '/profile',
-          arguments: userData,
-        );
+      final prefs = await SharedPreferences.getInstance();
+      final email = prefs.getString(
+        'loggedInEmail',
+      ); // Retrieve logged-in email
+      if (email != null) {
+        final userData = await dbHelper.getUserByEmail(email);
+        if (userData != null) {
+          Navigator.pushReplacementNamed(
+            context,
+            '/profile',
+            arguments: userData,
+          );
+        } else {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('User data not found')));
+        }
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('User data not found')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('No user is logged in')));
       }
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No user is logged in')),
-      );
-    }
-      
-    
     } else if (index == 1) {
       // Stores tab
       Navigator.pushReplacementNamed(context, '/store-list');
-    }
-    else if (index == 2) {
+    } else if (index == 2) {
       // Favorites tab
       Navigator.pushNamed(context, '/favorite-stores');
     }
@@ -191,6 +154,9 @@ class _StoreListPageState extends State<StoreListPage> {
 
   @override
   Widget build(BuildContext context) {
+    final favoriteStoreIds =
+        Provider.of<StoreProvider>(context).favoriteStoreIds;
+
     return Scaffold(
       backgroundColor: const Color(0xFFF2F5F7),
       appBar: AppBar(
@@ -209,14 +175,15 @@ class _StoreListPageState extends State<StoreListPage> {
           itemBuilder: (context, index) {
             final store = allStores[index];
             final isFav = favoriteStoreIds.contains(store.id);
-            final distance = userPosition != null
-                ? calculateDistance(
-                    userPosition!.latitude,
-                    userPosition!.longitude,
-                    store.latitude,
-                    store.longitude,
-                  ).toStringAsFixed(2)
-                : '...';
+            final distance =
+                userPosition != null
+                    ? _calculateDistance(
+                      userPosition!.latitude,
+                      userPosition!.longitude,
+                      store.latitude,
+                      store.longitude,
+                    ).toStringAsFixed(2)
+                    : '...';
 
             return Container(
               margin: const EdgeInsets.symmetric(vertical: 10),
@@ -257,7 +224,7 @@ class _StoreListPageState extends State<StoreListPage> {
                     isFav ? Icons.favorite : Icons.favorite_border,
                     color: isFav ? Colors.red : Colors.grey,
                   ),
-                  onPressed: () => toggleFavorite(store.id),
+                  onPressed: () => _toggleFavorite(store.id),
                 ),
               ),
             );
@@ -266,7 +233,7 @@ class _StoreListPageState extends State<StoreListPage> {
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
-        onTap: onTabTapped,
+        onTap: _onTabTapped,
         selectedItemColor: Colors.teal,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
