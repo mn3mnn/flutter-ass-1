@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ass1/database/database_helper.dart';
-import 'package:ass1/pages/profile_page.dart';
 
 class Store {
   final int id;
